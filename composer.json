@@ -1,0 +1,52 @@
+{
+    "name": "dhavalptel/laravel-queue-monitor",
+    "description": "A lightweight, memory-efficient queue monitoring package for Laravel that reads directly from Redis.",
+    "keywords": ["laravel", "queue", "monitor", "redis", "dashboard", "jobs"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dhaval Patel",
+            "email": "dhavalpatel@example.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "illuminate/contracts": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/redis": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/queue": "^10.0|^11.0|^12.0|^13.0",
+        "illuminate/support": "^10.0|^11.0|^12.0|^13.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0|^9.0|^10.0",
+        "pestphp/pest": "^2.0|^3.0",
+        "pestphp/pest-plugin-laravel": "^2.0|^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "DhavalPtel\\QueueMonitor\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "DhavalPtel\\QueueMonitor\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "DhavalPtel\\QueueMonitor\\QueueMonitorServiceProvider"
+            ],
+            "aliases": {
+                "QueueMonitor": "DhavalPtel\\QueueMonitor\\Facades\\QueueMonitor"
+            }
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
