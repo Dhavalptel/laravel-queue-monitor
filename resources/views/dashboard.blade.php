@@ -147,6 +147,16 @@
         </div>
         <div class="header-right">
             <span class="env-badge" x-text="'{{ app()->environment() }}'"></span>
+            @if(class_exists('Opcodes\LogViewer\LogViewerServiceProvider'))
+            <a href="{{ url(config('log-viewer.route_path', 'log-viewer')) }}"
+               target="_blank"
+               style="display:inline-flex;align-items:center;gap:6px;padding:5px 11px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#a3b8cc;font-size:12px;text-decoration:none;transition:all .15s;"
+               onmouseover="this.style.background='rgba(255,255,255,0.13)';this.style.color='#e2eaf2'"
+               onmouseout="this.style.background='rgba(255,255,255,0.07)';this.style.color='#a3b8cc'">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                View Logs
+            </a>
+            @endif
             <div class="connection-badge">
                 <span class="connection-dot"></span>
                 Redis connected
