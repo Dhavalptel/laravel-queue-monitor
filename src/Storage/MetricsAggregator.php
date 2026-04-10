@@ -13,6 +13,14 @@ class MetricsAggregator
     ) {}
 
     /**
+     * Get aggregate stats — delegates to storage.
+     */
+    public function stats(): array
+    {
+        return $this->storage->getStats();
+    }
+
+    /**
      * Get a complete snapshot of all metrics.
      */
     public function snapshot(): array

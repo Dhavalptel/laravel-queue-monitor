@@ -27,19 +27,20 @@ class JobFailedListener
         if (empty($jobId)) {
             return;
         }
+        
+        $queue = $event->job->getQueue() ?? 'default';
 
         // Remove from running jobs (if still there)
-        $this->storage->markJobCompleted($jobId);
+        $this->storage->markJobCompleted($jobId, $queue);
 
         // Record the failure
-        $this->storage->recordFailure([
-            'job' => $event->job->resolveName(),
-            'queue' => $event->job->getQueue() ?? 'default',
-            'exception' => $event->exception ? $event->exception->getMessage() : 'Unknown error',
-            'failed_at' => now()->timestamp,
-            'attempts' => $event->job->attempts(),
-            'max_tries' => $event->job->maxTries(),
-            'connection' => $event->connectionName,
+        $this->storage->markJobFailed($jobId, [
+            'job'        => $event->job->resolveName(),
+            'queue'      => $queue,
+            'exception'  => $event->exception ? $event->exception->getMessage() : 'Unknown error',
+            'failed_at'  => now()->timestamp,
+            'attempts'   => $event->job->attempts(),
+            'max_tries'  => $event->job->maxTries(),
         ]);
     }
 }

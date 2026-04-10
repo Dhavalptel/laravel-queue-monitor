@@ -76,7 +76,7 @@ class RedisStorage implements StorageDriver
             'job' => $data['job'],
             'queue' => $data['queue'],
             'exception' => $this->truncateException($data['exception'] ?? ''),
-            'failed_at' => Carbon::now()->toIso8601String(),
+            'failed_at' => Carbon::now()->timestamp,
             'attempts' => $data['attempts'] ?? 0,
             'max_tries' => $data['max_tries'] ?? null,
         ]);
@@ -195,11 +195,9 @@ class RedisStorage implements StorageDriver
         $failedJobs = $this->getFailedJobs(limit: 100);
 
         // Count failures in the last hour
-        $oneHourAgo = Carbon::now()->subHour();
+        $oneHourAgo = Carbon::now()->subHour()->timestamp;
         $recentFailures = count(array_filter($failedJobs, function ($job) use ($oneHourAgo) {
-            $failedAt = Carbon::parse($job['failed_at'] ?? '');
-
-            return $failedAt->isAfter($oneHourAgo);
+            return ($job['failed_at'] ?? 0) >= $oneHourAgo;
         }));
 
         $failureRate = $totalProcessed > 0
@@ -212,11 +210,14 @@ class RedisStorage implements StorageDriver
             : 0;
 
         return [
-            'processed_per_hour' => $totalProcessed,
-            'running_count' => count($runningJobs),
-            'failed_last_hour' => $recentFailures,
-            'failure_rate' => $failureRate,
+            'processed_per_hour'  => $totalProcessed,
+            'running_count'       => count($runningJobs),
+            'failed_count'        => $recentFailures,
+            'failed_last_hour'    => $recentFailures,
+            'failure_rate'        => $failureRate,
+            'avg_wait_seconds'    => $avgDuration,
             'avg_processing_seconds' => $avgDuration,
+            'total_pending'       => 0, // populated by queue size collector
         ];
     }
 

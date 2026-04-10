@@ -57,9 +57,10 @@ class QueueMonitor
     {
         $queues = $this->queueSizeCollector->collect();
         $result = [];
+        $throughput = $this->storage->getThroughput($minutes);
 
         foreach ($queues as $queue) {
-            $result[$queue['name']] = $this->storage->getThroughput($queue['name'], $minutes);
+                    $result[$queue['name']] = $throughput;
         }
 
         return $result;

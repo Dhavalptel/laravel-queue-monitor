@@ -30,12 +30,9 @@ class JobProcessedListener
         }
 
         $queue = $event->job->getQueue() ?? 'default';
-
-        // Remove from running jobs
-        $this->storage->markJobCompleted($jobId);
-
-        // Increment throughput counter
-        $this->storage->incrementThroughput($queue);
+        
+        // Remove from running jobs and increment throughput
+        $this->storage->markJobCompleted($jobId, $queue);
 
         // Check for job duration alerts
         $this->checkDurationAlert($event);
