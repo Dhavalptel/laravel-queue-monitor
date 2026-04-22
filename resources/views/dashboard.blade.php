@@ -45,8 +45,12 @@
         .header-title { font-family: var(--mono); font-weight: 600; font-size: 16px; letter-spacing: -0.02em; }
         .header-subtitle { font-size: 12px; color: var(--text-muted); font-family: var(--mono); margin-top: 1px; }
         .header-right { display: flex; align-items: center; gap: 16px; }
-        .connection-badge { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--accent-green); background: var(--accent-green-dim); padding: 5px 12px; border-radius: 20px; border: 1px solid rgba(16,185,129,0.2); }
-        .connection-dot { width: 6px; height: 6px; background: var(--accent-green); border-radius: 50%; animation: pulse-dot 2s ease-in-out infinite; }
+        .connection-badge { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; padding: 5px 12px; border-radius: 20px; }
+        .connection-badge.ok { color: var(--accent-green); background: var(--accent-green-dim); border: 1px solid rgba(16,185,129,0.2); }
+        .connection-badge.err { color: var(--accent-red); background: var(--accent-red-dim); border: 1px solid rgba(239,68,68,0.2); }
+        .connection-dot { width: 6px; height: 6px; border-radius: 50%; animation: pulse-dot 2s ease-in-out infinite; }
+        .connection-dot.ok { background: var(--accent-green); }
+        .connection-dot.err { background: var(--accent-red); animation: none; }
         @keyframes pulse-dot { 0%,100% { opacity:1 } 50% { opacity:0.5 } }
         .env-badge { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-amber); background: var(--accent-amber-dim); padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(245,158,11,0.2); }
 
@@ -147,9 +151,9 @@
         </div>
         <div class="header-right">
             <span class="env-badge" x-text="'{{ app()->environment() }}'"></span>
-            <div class="connection-badge">
-                <span class="connection-dot"></span>
-                Redis connected
+            <div class="connection-badge" :class="redisOk ? 'ok' : 'err'">
+                <span class="connection-dot" :class="redisOk ? 'ok' : 'err'"></span>
+                <span x-text="redisOk ? 'Redis connected' : 'Redis disconnected'"></span>
             </div>
         </div>
     </header>
@@ -309,6 +313,7 @@ function queueMonitor() {
         throughputBars: [],
         lastUpdated: 'loading...',
         polling: null,
+        redisOk: true,
 
         async init() {
             await this.fetchAll();
@@ -331,6 +336,10 @@ function queueMonitor() {
                     fetch(base + '/throughput?minutes=60', { headers }),
                 ]);
 
+                if (!queuesRes.ok || !statsRes.ok) {
+                    throw new Error('Redis unavailable (HTTP ' + (queuesRes.ok ? statsRes.status : queuesRes.status) + ')');
+                }
+
                 const queuesData = await queuesRes.json();
                 const runningData = await runningRes.json();
                 const failedData = await failedRes.json();
@@ -343,9 +352,11 @@ function queueMonitor() {
                 this.stats = statsData;
                 this.processThroughput(throughputData.queues || {});
 
+                this.redisOk = true;
                 this.lastUpdated = 'just now';
             } catch (e) {
                 console.error('Queue Monitor fetch error:', e);
+                this.redisOk = false;
                 this.lastUpdated = 'error fetching data';
             }
         },

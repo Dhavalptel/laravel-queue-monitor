@@ -13,14 +13,6 @@ class MetricsAggregator
     ) {}
 
     /**
-     * Get aggregate stats — delegates to storage.
-     */
-    public function stats(): array
-    {
-        return $this->storage->getStats();
-    }
-
-    /**
      * Get a complete snapshot of all metrics.
      */
     public function snapshot(): array
@@ -32,6 +24,19 @@ class MetricsAggregator
             'throughput' => $this->storage->getThroughput(),
             'stats' => $this->storage->getStats(),
         ];
+    }
+    
+    /**
+     * Get aggregate stats — delegates to storage.
+     */
+    public function stats(): array
+    {
+        $stats = $this->storage->getStats();
+        $queues = $this->queueSizeCollector->collect();
+
+        $stats['total_pending'] = array_sum(array_column($queues, 'pending'));
+
+        return $stats;
     }
 
     /**
