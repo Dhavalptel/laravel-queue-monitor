@@ -22,5 +22,6 @@ Route::group([
         Route::get('/failed', [ApiController::class, 'failed'])->name('queue-monitor.api.failed');
         Route::get('/throughput', [ApiController::class, 'throughput'])->name('queue-monitor.api.throughput');
         Route::get('/stats', [ApiController::class, 'stats'])->name('queue-monitor.api.stats');
+        Route::get('/health', [ApiController::class, 'health'])->name('queue-monitor.api.health');
     });
 });

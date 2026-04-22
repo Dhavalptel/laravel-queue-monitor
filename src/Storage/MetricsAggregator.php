@@ -2,14 +2,14 @@
 
 namespace DhavalPtel\QueueMonitor\Storage;
 
-use DhavalPtel\QueueMonitor\Collectors\RedisQueueSizeCollector;
+use DhavalPtel\QueueMonitor\Collectors\UnifiedQueueSizeCollector;
 use DhavalPtel\QueueMonitor\Contracts\StorageDriver;
 
 class MetricsAggregator
 {
     public function __construct(
-        protected StorageDriver $storage,
-        protected RedisQueueSizeCollector $queueSizeCollector,
+        protected StorageDriver             $storage,
+        protected UnifiedQueueSizeCollector $queueSizeCollector,
     ) {}
 
     /**
@@ -18,20 +18,20 @@ class MetricsAggregator
     public function snapshot(): array
     {
         return [
-            'queues' => $this->queueSizeCollector->collect(),
-            'running' => $this->storage->getRunningJobs(),
-            'failed' => $this->storage->getFailedJobs(),
+            'queues'     => $this->queueSizeCollector->collect(),
+            'running'    => $this->storage->getRunningJobs(),
+            'failed'     => $this->storage->getFailedJobs(),
             'throughput' => $this->storage->getThroughput(),
-            'stats' => $this->storage->getStats(),
+            'stats'      => $this->storage->getStats(),
         ];
     }
-    
+
     /**
-     * Get aggregate stats — delegates to storage.
+     * Aggregate stats, merging total_pending from all drivers.
      */
     public function stats(): array
     {
-        $stats = $this->storage->getStats();
+        $stats  = $this->storage->getStats();
         $queues = $this->queueSizeCollector->collect();
 
         $stats['total_pending'] = array_sum(array_column($queues, 'pending'));
@@ -45,7 +45,7 @@ class MetricsAggregator
     public function throughputRate(int $minutes = 5): float
     {
         $throughput = $this->storage->getThroughput($minutes);
-        $total = array_sum(array_column($throughput, 'jobs'));
+        $total      = array_sum(array_column($throughput, 'jobs'));
 
         return $minutes > 0 ? round($total / $minutes, 1) : 0;
     }
@@ -55,20 +55,18 @@ class MetricsAggregator
      */
     public function failureRate(int $minutes = 60): float
     {
-        $stats = $this->storage->getStats();
-
-        return $stats['failure_rate'] ?? 0;
+        return $this->storage->getStats()['failure_rate'] ?? 0;
     }
 
     /**
-     * Determine overall system health.
+     * Determine overall system health across all drivers.
      */
     public function health(): string
     {
-        $stats = $this->storage->getStats();
-        $queues = $this->queueSizeCollector->collect();
-
+        $stats      = $this->storage->getStats();
+        $queues     = $this->queueSizeCollector->collect();
         $maxPending = 0;
+
         foreach ($queues as $queue) {
             $maxPending = max($maxPending, $queue['pending']);
         }

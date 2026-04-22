@@ -84,10 +84,12 @@ class RedisQueueSizeCollector implements MetricsCollector
 
     /**
      * Get the list of queues to monitor.
+     * Checks connections.redis.queues first, falls back to legacy 'queues' key.
      */
     protected function getMonitoredQueues(): array
     {
-        $configured = config('queue-monitor.queues', ['*']);
+        $configured = config('queue-monitor.connections.redis.queues',
+            config('queue-monitor.queues', ['*']));
 
         if ($configured === ['*']) {
             return $this->discoverQueues();

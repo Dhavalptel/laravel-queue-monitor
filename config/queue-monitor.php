@@ -41,14 +41,30 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Queues to Monitor
+    | Queues to Monitor — per driver
     |--------------------------------------------------------------------------
     |
-    | Use ['*'] to auto-discover and monitor all queues.
-    | Or specify an explicit list: ['default', 'high', 'emails']
+    | List queues under the driver that runs them.
+    | Redis queues also support ['*'] for auto-discovery.
+    | The legacy top-level 'queues' key is still honoured as redis queues.
     |
     */
-    'queues' => ['*'],
+    'connections' => [
+        'redis' => [
+            'queues' => ['default', 'emails', 'media', 'notifications'],
+        ],
+        'database' => [
+            'queues' => ['orders', 'reports', 'imports', 'maintenance'],
+            'table'  => 'jobs',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Legacy queue list (treated as redis queues — kept for backward compat)
+    |--------------------------------------------------------------------------
+    */
+    'queues' => [],
 
     /*
     |--------------------------------------------------------------------------
@@ -69,7 +85,7 @@ return [
     'dashboard' => [
         'enabled' => true,
         'path' => 'queue-monitor',
-        'middleware' => ['web', 'auth'],
+        'middleware' => ['web'],
         'polling_interval' => 3,
     ],
 

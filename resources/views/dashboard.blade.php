@@ -336,10 +336,6 @@ function queueMonitor() {
                     fetch(base + '/throughput?minutes=60', { headers }),
                 ]);
 
-                if (!queuesRes.ok || !statsRes.ok) {
-                    throw new Error('Redis unavailable (HTTP ' + (queuesRes.ok ? statsRes.status : queuesRes.status) + ')');
-                }
-
                 const queuesData = await queuesRes.json();
                 const runningData = await runningRes.json();
                 const failedData = await failedRes.json();

@@ -3,23 +3,23 @@
 namespace DhavalPtel\QueueMonitor;
 
 use DhavalPtel\QueueMonitor\Collectors\FailedJobCollector;
-use DhavalPtel\QueueMonitor\Collectors\RedisQueueSizeCollector;
 use DhavalPtel\QueueMonitor\Collectors\RunningJobCollector;
+use DhavalPtel\QueueMonitor\Collectors\UnifiedQueueSizeCollector;
 use DhavalPtel\QueueMonitor\Storage\MetricsAggregator;
 use DhavalPtel\QueueMonitor\Storage\RedisStorage;
 
 class QueueMonitor
 {
     public function __construct(
-        protected RedisStorage $storage,
-        protected RedisQueueSizeCollector $queueSizeCollector,
-        protected RunningJobCollector $runningJobCollector,
-        protected FailedJobCollector $failedJobCollector,
-        protected MetricsAggregator $aggregator,
+        protected RedisStorage             $storage,
+        protected UnifiedQueueSizeCollector $queueSizeCollector,
+        protected RunningJobCollector      $runningJobCollector,
+        protected FailedJobCollector       $failedJobCollector,
+        protected MetricsAggregator        $aggregator,
     ) {}
 
     /**
-     * Get sizes for all monitored queues.
+     * Get sizes for all monitored queues across all drivers.
      */
     public function queueSizes(): array
     {
@@ -55,9 +55,9 @@ class QueueMonitor
      */
     public function allThroughput(int $minutes = 60): array
     {
-        $queues = $this->queueSizeCollector->collect();
-        $result = [];
+        $queues     = $this->queueSizeCollector->collect();
         $throughput = $this->storage->getThroughput($minutes);
+        $result     = [];
 
         foreach ($queues as $queue) {
             $result[$queue['name']] = $throughput;

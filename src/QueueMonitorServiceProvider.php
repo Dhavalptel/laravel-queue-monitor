@@ -2,9 +2,11 @@
 
 namespace DhavalPtel\QueueMonitor;
 
+use DhavalPtel\QueueMonitor\Collectors\DatabaseQueueSizeCollector;
 use DhavalPtel\QueueMonitor\Collectors\FailedJobCollector;
 use DhavalPtel\QueueMonitor\Collectors\RedisQueueSizeCollector;
 use DhavalPtel\QueueMonitor\Collectors\RunningJobCollector;
+use DhavalPtel\QueueMonitor\Collectors\UnifiedQueueSizeCollector;
 use DhavalPtel\QueueMonitor\Commands\PurgeCommand;
 use DhavalPtel\QueueMonitor\Commands\SnapshotCommand;
 use DhavalPtel\QueueMonitor\Commands\StatsCommand;
@@ -34,6 +36,8 @@ class QueueMonitorServiceProvider extends ServiceProvider
         $this->app->singleton(RedisKeyParser::class);
         $this->app->singleton(RedisStorage::class);
         $this->app->singleton(RedisQueueSizeCollector::class);
+        $this->app->singleton(DatabaseQueueSizeCollector::class);
+        $this->app->singleton(UnifiedQueueSizeCollector::class);
         $this->app->singleton(RunningJobCollector::class);
         $this->app->singleton(FailedJobCollector::class);
         $this->app->singleton(MetricsAggregator::class);
@@ -43,7 +47,7 @@ class QueueMonitorServiceProvider extends ServiceProvider
         $this->app->singleton(QueueMonitor::class, function ($app) {
             return new QueueMonitor(
                 $app->make(RedisStorage::class),
-                $app->make(RedisQueueSizeCollector::class),
+                $app->make(UnifiedQueueSizeCollector::class),
                 $app->make(RunningJobCollector::class),
                 $app->make(FailedJobCollector::class),
                 $app->make(MetricsAggregator::class),
